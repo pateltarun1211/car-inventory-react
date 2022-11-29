@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
+import { Home, Dashboard, SignIn, SignOut, SignUp } from './components';
+import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'
+import './styles.css'
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(
@@ -9,7 +10,15 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <App />
+    <Router>
+      <Routes>
+        <Route path='/' element={<Home title = {'Car Creator'}/>}/>
+        <Route path='/dashboard' element={<Dashboard/>}/>
+        <Route path='/signin' element={<SignIn/>}/>
+        <Route path='/signout' element={<SignOut/>}/>
+        <Route path='/signup' element={<SignUp/>}/>
+      </Routes>
+    </Router>
   </React.StrictMode>
 );
 
