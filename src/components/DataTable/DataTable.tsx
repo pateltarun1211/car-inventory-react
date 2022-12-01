@@ -14,6 +14,7 @@ import{
 import { serverCalls } from "../../api";
 import { useGetData } from "../../custom-hooks";
 import { CarForm } from "../CarForm";
+import { getAuth } from "firebase/auth";
 
 const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
@@ -107,33 +108,46 @@ export const DataTable = () => {
     }
 
     console.log(gridData) // a list of id's from checked rows
+    //Check our local storage for authenticated user
+    const myAuth = localStorage.getItem('myAuth')
+    console.log(myAuth);
+    //Conditionally Render DataTable for Authenticated Users
+    if (myAuth== 'true'){
+        return (
+            <div style={{ height: 400, width: '100%' }}>
+                <DataGrid
+                    rows={carData}
+                    columns={columns}
+                    pageSize={5}
+                    rowsPerPageOptions={[5]}
+                    checkboxSelection
+                    onSelectionModelChange={(newSelectionModel) => {setData(newSelectionModel);}}
+                    {...carData}
+                />
+                {/* Popup Functionality for Update, and Delete Button lives*/}
+                <Button onClick={handleOpen}>Update</Button>
+                <Button variant='contained' color="secondary" onClick={deleteData}>Delete</Button>
 
-    return (
-        <div style={{ height: 400, width: '100%' }}>
-            <DataGrid
-                rows={carData}
-                columns={columns}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                checkboxSelection
-                onSelectionModelChange={(newSelectionModel) => {setData(newSelectionModel);}}
-                {...carData}
-            />
-            {/* Popup Functionality for Update, and Delete Button lives*/}
-            <Button onClick={handleOpen}>Update</Button>
-            <Button variant='contained' color="secondary" onClick={deleteData}>Delete</Button>
-
-            {/* Dialog Open */}
-            <Dialog open={open} onClose={handleClose} aria-labelledby='form-dialog-title'>
-                <DialogTitle id='form-dialog-title'>Update a Drone</DialogTitle>
-                <DialogContent>
-                <DialogContentText>Drone ID: {gridData[0]}</DialogContentText>
-                    <CarForm id= {`${gridData[0]}`} />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose} color='primary'>Cancel</Button>
-                </DialogActions>
-            </Dialog>
-        </div>
-    )
+                {/* Dialog Open */}
+                <Dialog open={open} onClose={handleClose} aria-labelledby='form-dialog-title'>
+                    <DialogTitle id='form-dialog-title'>Update a Car</DialogTitle>
+                    <DialogContent>
+                    <DialogContentText>Car ID: {gridData[0]}</DialogContentText>
+                        <CarForm id= {`${gridData[0]}`} />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleClose} color='primary'>Cancel</Button>
+                    </DialogActions>
+                </Dialog>
+            </div>
+        )
+    } else {
+        return (
+            //Hide DataTable for non-authed users
+            <div>
+                <h3>Please Sign In to View Your Drone Collection</h3>
+            </div>
+        )
+    }
+    
 }
