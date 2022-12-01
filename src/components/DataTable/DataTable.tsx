@@ -1,17 +1,22 @@
-import React from "react";
-import { DataGrid, GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
+// React imports
+import React, { useState } from "react";
+import { DataGrid, GridColDef, GridSelectionModel } from "@mui/x-data-grid";
+import{
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle
+} from '@mui/material'
+
+// Local imports
+import { serverCalls } from "../../api";
+import { useGetData } from "../../custom-hooks";
+import { CarForm } from "../CarForm";
 
 const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
-    {
-        field: 'fullName',
-        headerName: 'Full name',
-        description: 'This column has a value getter and is not sortable.',
-        sortable: false,
-        width: 180,
-        valueGetter: (params: GridValueGetterParams) =>
-            `${params.row.make || ''} ${params.row.model || ''}`,
-    },
     {
         field: 'make',
         headerName: 'Make',
@@ -46,23 +51,20 @@ const columns: GridColDef[] = [
         editable: true,
     },
     {
-        field: 'maxSpeed',
+        field: 'max_speed',
         headerName: 'Max Speed (mph)',
-        type: 'number',
         width: 130,
         editable: true,
     },
     {
-        field: 'zeroSixty',
+        field: 'zero_sixty',
         headerName: '0-60 Time(sec)',
-        type: 'number',
         width: 110,
         editable: true,
     },
     {
         field: 'weight',
         headerName: 'Curb Weight (lbs)',
-        type: 'number',
         width: 125,
         editable: true,
     },
@@ -73,32 +75,65 @@ const columns: GridColDef[] = [
         editable: true,
     },
     {
-        field: 'fuelType',
+        field: 'fuel_type',
         headerName: 'Fuel Type',
         width: 150,
         editable: true,
     },
 ];
 
-const rows = [
-    { id: 1, make: 'Rimac', model: 'Nevera', year: 2023, category: 'Hypercar', price: 2050000, maxSpeed: 258, zeroSixty: 1.85, weight: 4740, color: 'Silver', fuelType: 'Electric'},
-    { id: 2, make: 'Ferrari', model: 'SF90 Stradale', year: 2022, category: 'Hypercar', price: 625000, maxSpeed: 211, zeroSixty: 2.5, weight: 3461, color: 'Silver', fuelType: 'Gas'},
-    { id: 3, make: 'Polestar', model: '2', year: 2023, category: 'Sedan', price: 75000, maxSpeed: 127, zeroSixty: 4.5, weight: 4650, color: 'Midnight', fuelType: 'Electric'},
-    { id: 4, make: 'Audi', model: 'A6', year: 2012, category: 'Sedan', price: 60000, maxSpeed: 155, zeroSixty: 5.1, weight: 4000, color: 'Black', fuelType: 'Gas'},
-];
+interface gridData{
+    data:{
+        id?:string;
+    }
+}
 
 export const DataTable = () => {
+    let { carData, getData } = useGetData();
+    let [open, setOpen] = useState(false)
+    let [gridData, setData] = useState<GridSelectionModel>([])
+
+    let handleOpen = () => {
+        setOpen(true)
+    }
+
+    let handleClose = () => {
+        setOpen(false)
+    }
+
+    let deleteData = () => {
+        serverCalls.delete(`${gridData[0]}`)
+        getData()
+    }
+
+    console.log(gridData) // a list of id's from checked rows
+
     return (
         <div style={{ height: 400, width: '100%' }}>
             <DataGrid
-                rows={rows}
+                rows={carData}
                 columns={columns}
                 pageSize={5}
                 rowsPerPageOptions={[5]}
                 checkboxSelection
-                disableSelectionOnClick
-                experimentalFeatures={{ newEditingApi: true }}
+                onSelectionModelChange={(newSelectionModel) => {setData(newSelectionModel);}}
+                {...carData}
             />
+            {/* Popup Functionality for Update, and Delete Button lives*/}
+            <Button onClick={handleOpen}>Update</Button>
+            <Button variant='contained' color="secondary" onClick={deleteData}>Delete</Button>
+
+            {/* Dialog Open */}
+            <Dialog open={open} onClose={handleClose} aria-labelledby='form-dialog-title'>
+                <DialogTitle id='form-dialog-title'>Update a Drone</DialogTitle>
+                <DialogContent>
+                <DialogContentText>Drone ID: {gridData[0]}</DialogContentText>
+                    <CarForm id= {`${gridData[0]}`} />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose} color='primary'>Cancel</Button>
+                </DialogActions>
+            </Dialog>
         </div>
     )
 }
